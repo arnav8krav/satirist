@@ -54,7 +54,7 @@ export default function InputArea({ mode, disabled, onSubmit }: Props) {
           fontSize: '11px',
           letterSpacing: '0.05em',
           textTransform: 'uppercase',
-          color: 'rgba(196, 165, 90, 0.6)',
+          color: 'var(--accent-gold)',
           marginBottom: '8px',
         }}
       >

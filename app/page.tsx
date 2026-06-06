@@ -41,6 +41,8 @@ export default function Home() {
   const [dividers, setDividers] = useState<ModeDivider[]>([])
   const lastUserMessage = useRef<string>('')
   const lastModeRef = useRef<Mode>('roast')
+  const abortControllerRef = useRef<AbortController | null>(null)
+  const isSendingRef = useRef(false)
 
   const { messages, addMessage, updateLastAssistant, setMessages, clearHistory } = useVoiceHistory(voice)
 
@@ -62,7 +64,6 @@ export default function Home() {
       }
       withDividers.push(item)
     }
-    // append any remaining dividers
     for (const d of dividers) {
       if (!insertedDividerIds.has(d.id) && d.id.startsWith(`${voice}-`)) {
         withDividers.push(d)
@@ -72,6 +73,8 @@ export default function Home() {
   })()
 
   const handleVoiceChange = useCallback((v: Voice) => {
+    abortControllerRef.current?.abort()
+    isSendingRef.current = false
     setVoice(v)
     setError(false)
     setIsStreaming(false)
@@ -94,6 +97,8 @@ export default function Home() {
   }, [voice, messages.length])
 
   async function sendMessage(text: string) {
+    if (isSendingRef.current) return
+    isSendingRef.current = true
     lastUserMessage.current = text
     setError(false)
     setStreamingContent('')
@@ -107,15 +112,10 @@ export default function Home() {
     }
     addMessage(userMsg)
 
-    const assistantPlaceholder: Message = {
-      id: `assistant-${Date.now() + 1}`,
-      role: 'assistant',
-      content: '',
-      mode,
-      timestamp: Date.now() + 1,
-    }
-
     setIsStreaming(true)
+
+    const controller = new AbortController()
+    abortControllerRef.current = controller
 
     try {
       const contextMessages = messages
@@ -128,6 +128,7 @@ export default function Home() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ messages: contextMessages, voice, mode }),
+        signal: controller.signal,
       })
 
       if (!res.ok) {
@@ -146,24 +147,49 @@ export default function Home() {
 
       const decoder = new TextDecoder()
       let accumulated = ''
+      let placeholderAdded = false
       const resolvedVoice: Exclude<Voice, 'auto'> | undefined = detectedVoiceHeader ?? undefined
-
-      addMessage(assistantPlaceholder)
+      const assistantPlaceholderId = `assistant-${Date.now() + 1}`
 
       while (true) {
         const { done, value } = await reader.read()
         if (done) break
         accumulated += decoder.decode(value, { stream: true })
+        if (!placeholderAdded) {
+          addMessage({
+            id: assistantPlaceholderId,
+            role: 'assistant',
+            content: '',
+            mode,
+            timestamp: Date.now() + 1,
+          })
+          placeholderAdded = true
+        }
         setStreamingContent(accumulated)
       }
 
       setIsStreaming(false)
       setStreamingContent('')
-      updateLastAssistant(accumulated, resolvedVoice)
-    } catch {
+
+      if (accumulated) {
+        updateLastAssistant(accumulated, resolvedVoice)
+      } else {
+        // Stream closed with no content — discard placeholder and show error
+        if (placeholderAdded) {
+          setMessages((prev) => prev.filter((m) => m.id !== assistantPlaceholderId))
+        }
+        setError(true)
+      }
+    } catch (e) {
       setIsStreaming(false)
       setStreamingContent('')
-      setError(true)
+      if (e instanceof Error && e.name === 'AbortError') {
+        // Intentional abort (voice/mode change, reset) — don't show error
+      } else {
+        setError(true)
+      }
+    } finally {
+      isSendingRef.current = false
     }
   }
 
@@ -173,6 +199,8 @@ export default function Home() {
   }
 
   function handleReset() {
+    abortControllerRef.current?.abort()
+    isSendingRef.current = false
     clearHistory()
     setMessages([])
     clearAllHistory()
@@ -210,6 +238,7 @@ export default function Home() {
         </h1>
         <button
           onClick={handleReset}
+          aria-label="Reset conversation"
           style={{
             fontFamily: 'var(--font-dm-sans), system-ui, sans-serif',
             fontSize: '11px',

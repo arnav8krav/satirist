@@ -57,7 +57,7 @@ export default function ChatArea({ items, isStreaming, streamingContent, error, 
                   fontSize: '11px',
                   letterSpacing: '0.05em',
                   textTransform: 'uppercase',
-                  color: '#555',
+                  color: 'var(--text-muted)',
                 }}
               >
                 {item.label}
@@ -93,7 +93,7 @@ export default function ChatArea({ items, isStreaming, streamingContent, error, 
             }}
           >
             {streamingContent}
-            <span style={{ opacity: 0.6 }}>▌</span>
+            <span aria-hidden="true" style={{ opacity: 0.6 }}>▌</span>
           </div>
         </div>
       )}

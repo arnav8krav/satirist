@@ -31,7 +31,8 @@ export default function ErrorMessage({ voice, onRetry }: Props) {
           border: 'none',
           cursor: 'pointer',
           textDecoration: 'underline',
-          padding: 0,
+          padding: '8px 0',
+          minHeight: '44px',
         }}
       >
         [Retry]
