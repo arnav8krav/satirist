@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useRef } from 'react'
+import ReactMarkdown from 'react-markdown'
 import Message from './Message'
 import ThinkingIndicator from './ThinkingIndicator'
 import ErrorMessage from './ErrorMessage'
@@ -89,10 +90,17 @@ export default function ChatArea({ items, isStreaming, streamingContent, error, 
               fontSize: 'clamp(16px, 2vw, 18px)',
               lineHeight: '1.8',
               color: 'var(--text-primary)',
-              whiteSpace: 'pre-wrap',
             }}
           >
-            {streamingContent}
+            <ReactMarkdown
+              components={{
+                p: ({ children }) => <p style={{ margin: '0 0 0.6em' }}>{children}</p>,
+                strong: ({ children }) => <strong style={{ fontWeight: 700 }}>{children}</strong>,
+                em: ({ children }) => <em>{children}</em>,
+              }}
+            >
+              {streamingContent}
+            </ReactMarkdown>
             <span aria-hidden="true" style={{ opacity: 0.6 }}>▌</span>
           </div>
         </div>

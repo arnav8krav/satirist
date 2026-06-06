@@ -1,3 +1,4 @@
+import ReactMarkdown from 'react-markdown'
 import type { Voice, Mode } from '@/lib/types'
 
 interface Props {
@@ -35,10 +36,17 @@ export default function Message({ role, content, voice }: Props) {
           fontSize: 'clamp(16px, 2vw, 18px)',
           lineHeight: '1.8',
           color: 'var(--text-primary)',
-          whiteSpace: 'pre-wrap',
         }}
       >
-        {content}
+        <ReactMarkdown
+          components={{
+            p: ({ children }) => <p style={{ margin: '0 0 0.6em' }}>{children}</p>,
+            strong: ({ children }) => <strong style={{ fontWeight: 700 }}>{children}</strong>,
+            em: ({ children }) => <em>{children}</em>,
+          }}
+        >
+          {content}
+        </ReactMarkdown>
       </div>
       {voice && voice !== 'auto' && (
         <div
