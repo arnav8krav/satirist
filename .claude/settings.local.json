@@ -1,0 +1,18 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(~/.claude/skills/gstack/bin/gstack-review-read *)",
+      "Read(//private/tmp/**)",
+      "Bash(npx create-next-app@latest satirist --typescript --tailwind --app --no-src-dir --no-import-alias --yes)",
+      "Bash(cp *)",
+      "Bash(npm install *)",
+      "Bash(npm test *)",
+      "Bash(npx tsc *)",
+      "Bash(node node_modules/typescript/bin/tsc --noEmit)",
+      "Bash(node *)",
+      "Bash(git init *)",
+      "Bash(git checkout *)",
+      "Bash(git add *)"
+    ]
+  }
+}
