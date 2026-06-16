@@ -7,7 +7,7 @@ const playfair = Playfair_Display({ subsets: ['latin'], variable: '--font-playfa
 const dmSans = DM_Sans({ subsets: ['latin'], variable: '--font-dm-sans', display: 'swap' })
 
 export const metadata: Metadata = {
-  title: 'The Satirist',
+  title: 'The Deep Satirist',
   description: 'Wit without mercy. Satire without apology.',
 }
 

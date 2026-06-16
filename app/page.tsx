@@ -234,7 +234,7 @@ export default function Home() {
             color: 'var(--text-primary)',
           }}
         >
-          THE SATIRIST
+          THE DEEP SATIRIST
         </h1>
         <button
           onClick={handleReset}
